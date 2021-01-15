@@ -16,7 +16,7 @@ def index():
         if 'email' in request.form and 'password' in request.form:
             email = request.form['email']
             password = request.form['password']
-            pt = mysql.connector.connect(host="localmain", user="root", passwd="roo1t")
+            pt = mysql.connector.connect(host="127.0.0.1", user="root", passwd="root")
             ndb = pt.cursor()
             ndb.execute("SELECT * FROM user WHERE email=%s AND password=%s",(email,password))
             info = ndb.fetchone()
