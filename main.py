@@ -1,24 +1,41 @@
 from flask import Flask, render_template, request
-import mysql.connector as mysql
+
+from utils.db_utils import connectDb, writeToDatabase, readFromDatabase
 
 app = Flask(__name__)
 
 
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    mydb = mysql.connect(host="localhost", user="root", password="root", database="login_info")
-    if request.method == 'POST':
-        if 'email' in request.form and 'password' in request.form:
-            email = request.form['email']
-            password = request.form['password']
-            mycursor = mydb.cursor()
-            mycursor.execute("SELECT * FROM user WHERE email=%s AND password=%s", (email, password))
-            mycursor2 = mydb.cursor()
-            name = mycursor2.execute("SELECT name FROM user WHERE email=%s AND password=%s", (email, password))
-            for db in mycursor:
-                print(db)
     return render_template("login.html")
+
+
+@app.route('/register', methods=['GET'])
+def registerPage():
+    return render_template("register.html")
+
+
+@app.route('/register', methods=['POST'])
+def register_user():
+    email = request.form["email"]
+    password = request.form["password"]
+    name = request.form["username"]
+
+    writeToDatabase(f"INSERT INTO user (Name, email, password) VALUES ('{name}','{email}', '{password}');")
+    return "Registration successful!!"
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    email = request.form['email']
+    password = request.form['password']
+
+    result = readFromDatabase(f"SELECT * FROM user WHERE email='{email}' AND password='{password}' limit 1")
+    if len(result) == 0:
+        return "Invalid Login Credentials"
+    else:
+        return render_template("homepage.html", context = {"name": result[0][1]})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
