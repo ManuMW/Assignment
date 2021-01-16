@@ -14,6 +14,8 @@ def index():
             password = request.form['password']
             mycursor = mydb.cursor()
             mycursor.execute("SELECT * FROM user WHERE email=%s AND password=%s", (email, password))
+            mycursor2 = mydb.cursor()
+            name = mycursor2.execute("SELECT name FROM user WHERE email=%s AND password=%s", (email, password))
             for db in mycursor:
                 print(db)
     return render_template("login.html")
