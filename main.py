@@ -1,9 +1,9 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session, redirect, url_for, g, make_response
 
-from utils.db_utils import connectDb, writeToDatabase, readFromDatabase
+from utils.db_utils import  writeToDatabase, readFromDatabase
 
 app = Flask(__name__)
-
+app.secret_key = "wakawaka"
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -30,11 +30,32 @@ def login():
     email = request.form['email']
     password = request.form['password']
 
+
     result = readFromDatabase(f"SELECT * FROM user WHERE email='{email}' AND password='{password}' limit 1")
     if len(result) == 0:
         return "Invalid Login Credentials"
     else:
-        return render_template("homepage.html", context = {"name": result[0][1]})
+        # username = readFromDatabase(f"SELECT Name FROM user WHERE email='{email}' AND password='{password}' limit 1")
+        username = result[0][1]
+        session["username"] = username
+        return redirect(url_for(".username"))
+
+@app.route("/homepage", methods=['GET'])
+def username():
+    if isLoggedIn():
+        user = session["username"]
+        print (user)
+        return render_template("homepage.html", context = {"name": user})
+    else:
+        return render_template("/login.html")
+
+def isLoggedIn():
+    if "username" in session:
+        return True
+    return False
+
+@app.route('/logout')
+def logout():
 
 
 if __name__ == '__main__':
