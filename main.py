@@ -36,27 +36,61 @@ def register_user():
 def login():
     email = request.form['email']
     password = request.form['password']
-
-
     result = readFromDatabase(f"SELECT * FROM user WHERE email='{email}' AND password='{password}' limit 1")
     if len(result) == 0:
         return "Invalid Login Credentials"
     else:
-
         user = result[0][1]
-
         session["username"] = user
         return redirect(url_for("username"))
 
-@app.route("/profile", methods=['GET'])
+@app.route('/posting', methods=['POST'])
+def posting():
+    post = request.form["comment"]
+    name = session["username"]
+    writeToDatabase(f"INSERT INTO post (create_time, post_message, user) VALUES (CURRENT_TIME(), '{post}','{name}')")
+    return redirect(url_for(username))
+
+
+@app.route("/homepage", methods=['GET'])
 def username():
     if "username" in session:
-        user_id = session["username"]
-        print (user_id)
-        return render_template('/profile.html')
+        user = session["username"]
+        data = readFromDatabase(f"SELECT user, post_message FROM post ORDER BY create_time DESC")
+        return render_template('/homepage.html', context={"name": user}, context2={"data": data})
     else:
         return redirect('/')
 
+@app.route("/search_page")
+def search_page():
+    return render_template("/search.html")
+
+
+@app.route("/search", methods=['POST'])
+def search():
+    search  = request.form["search"]
+    data=readFromDatabase(f"SELECT user FROM user WHERE name='{search}'")
+    return render_template("/search.html", context={"search": data})
+
+@app.route("/update", methods=['POST'])
+def update():
+    name = request.form["name"]
+    email = request.form["email"]
+    password = request.form["password"]
+    confirm_password = request.form["confirm_password"]
+    if name==session["username"] and password==confirm_password:
+        writeToDatabase(f"UPDATE user SET name='{name}', email = '{email}', password = '{password}'")
+        return redirect(url_for(username))
+    return "failed to update"
+
+
+@app.route('/profile_jmp')
+def profile_jmp():
+    return render_template('/profile.html')
+
+@app.route('/homepage_jmp')
+def homepage_jmp():
+    return redirect(url_for('username'))
 
 @app.route('/logout')
 def logout():

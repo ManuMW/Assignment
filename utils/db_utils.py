@@ -39,4 +39,6 @@ def readFromDatabase(cmd):
     return val
 
 
+
+
 createSchema()

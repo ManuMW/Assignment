@@ -6,12 +6,30 @@
 </head>
 <body>
 <div>
+    <a href="homepage_jmp">Homepage</a>
+</div>
+
+<div>
     <form action="/logout", method="get">
         <h1>Login successful</h1><br><br>
         <label>You are profile looks amazing</label><br><br>
-        <button  type="submit">Logout</button><br><br>
+        <button  type="submit" value="Logout">Logout</button><br><br>
     </form>
+</div>
 
+<div>
+    <form action="update", method="POST">
+        <h3>Update profile</h3>
+        <label>Username</label><br>
+        <input placeholder="text" name="username" ><br><br>
+        <label>Email Address</label><br>
+        <input placeholder="email" name="email" ><br><br>
+        <label>Password</label><br>
+        <input placeholder="password" name="password" "><br><br>
+        <label>Password confirmation</label><br>
+        <input placeholder="password" name="confirm_password" "><br><br>
+        <input type="submit" value="update">
+    </form>
 </div>
 </body>
 </html>
