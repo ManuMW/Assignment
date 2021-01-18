@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for, app
+from flask import Flask, render_template, request, session, redirect, url_for
 from utils.db_utils import  writeToDatabase, readFromDatabase
 from datetime import timedelta
 
@@ -8,7 +8,7 @@ app.secret_key = "wakawaka"
 @app.before_request
 def make_session_permanent():
     session.permanent = True
-    app.permanent_session_lifetime = timedelta(minutes=2)
+    app.permanent_session_lifetime = timedelta(minutes=1)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -56,21 +56,21 @@ def posting():
 def username():
     if "username" in session:
         user = session["username"]
-        data = readFromDatabase(f"SELECT user, post_message FROM post ORDER BY create_time DESC")
+        data = readFromDatabase(f"SELECT user, post_message FROM post WHERE user='{user}' ORDER BY create_time DESC ")
         return render_template('/homepage.html', context={"name": user}, context2={"data": data})
     else:
         return redirect('/')
 
 @app.route("/search_page")
 def search_page():
-    return render_template("/search.html")
+    return render_template("/search.html", context={'search': "NULL"})
 
 
 @app.route("/search", methods=['POST'])
 def search():
-    search  = request.form["search"]
-    data=readFromDatabase(f"SELECT user FROM user WHERE name='{search}'")
-    return render_template("/search.html", context={"search": data})
+    search = request.form["search"]
+    data=readFromDatabase(f"SELECT name FROM user WHERE name='{search}'")
+    return render_template("/search.html", context={'search': data})
 
 @app.route("/update", methods=['POST'])
 def update():
@@ -78,9 +78,11 @@ def update():
     email = request.form["email"]
     password = request.form["password"]
     confirm_password = request.form["confirm_password"]
-    if name==session["username"] and password==confirm_password:
-        writeToDatabase(f"UPDATE user SET name='{name}', email = '{email}', password = '{password}'")
-        return redirect(url_for(username))
+    if password==confirm_password:
+        writeToDatabase(f"UPDATE user SET Name='{name}', email = '{email}', password = '{password}' WHERE Name='{username}'")
+        user = session["username"]
+        data = readFromDatabase(f"SELECT user, post_message FROM post ORDER BY create_time DESC")
+        return render_template('/homepage.html', context={"name": user}, context2={"data": data})
     return "failed to update"
 
 
@@ -94,7 +96,7 @@ def homepage_jmp():
 
 @app.route('/logout')
 def logout():
-    session.pop("username")
+    session.clear()
     return redirect('/')
 
 if __name__ == '__main__':
