@@ -49,7 +49,10 @@ def posting():
     post = request.form["comment"]
     name = session["username"]
     writeToDatabase(f"INSERT INTO post (create_time, post_message, user) VALUES (CURRENT_TIME(), '{post}','{name}')")
-    return redirect(url_for(username))
+    user = session["username"]
+    data = readFromDatabase(f"SELECT user, post_message FROM post WHERE user='{user}' ORDER BY create_time DESC ")
+    return render_template('/homepage.html', context={"name": user}, context2={"data": data})
+
 
 
 @app.route("/homepage", methods=['GET'])
@@ -74,15 +77,16 @@ def search():
 
 @app.route("/update", methods=['POST'])
 def update():
+    main_name = session["username"]
     name = request.form["name"]
     email = request.form["email"]
     password = request.form["password"]
     confirm_password = request.form["confirm_password"]
     if password==confirm_password:
-        writeToDatabase(f"UPDATE user SET Name='{name}', email = '{email}', password = '{password}' WHERE Name='{username}'")
-        user = session["username"]
+        writeToDatabase(f"UPDATE user SET Name='{name}', email = '{email}', password = '{password}' WHERE Name='{main_name}'")
+        session["username"] = name
         data = readFromDatabase(f"SELECT user, post_message FROM post ORDER BY create_time DESC")
-        return render_template('/homepage.html', context={"name": user}, context2={"data": data})
+        return render_template('/homepage.html', context={"name": name}, context2={"data": data})
     return "failed to update"
 
 
